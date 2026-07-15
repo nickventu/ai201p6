@@ -4,9 +4,6 @@
 instance/
 __pycache__/
 *.pyc
-<<<<<<< HEAD
 .pytest_cache/
-=======
->>>>>>> 9c855a8 (Comment 1 Rename)
 .venv/
 venv/
