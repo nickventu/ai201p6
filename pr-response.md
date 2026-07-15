@@ -26,9 +26,13 @@
 **Engagement with reviewer's point:** I agree with your point, recency is what most users are optimizing for when checking a watchlist. However we should also think about cases where someone may just want to look for a specific title in a watchlist. In this situation alphabetical makes it much easier than date-added. I don't think this argues against date-added as the default, though — it only argues for eventually offering alphabetical as an optional secondary sort or filter, rather than making it the default users see first. I'd keep date-added as default and treat lookup-by-title as a separate, later feature if it turns out to be a common need.
 
 ## Comment 6 — Rebase
-**What conflicted:**
+**What conflicted:** .gitignore(non-substantive), models.py(WatchlistEntry class was written before main's UUID refactor landed; main had no WatchlistEntry at all yet, so the conflict was really "where does this new class go?")
 **How I resolved it:**
+.gitignore — accepted both sets of entries (union), since neither side's ignores were contradictory
+models.py — kept the WatchlistEntry class, but changed film_id from db.Integer to db.String(36) to match the now-UUID Film.id
 **How I verified no conflict remains:**
-
+git log --oneline --graph — confirmed linear history, no stray merge commits introduced by the rebase
+Manually audited three files that referenced film_id as an int for leftover stale assumptions post-rebase (watchlist_service.py docstring, watchlist.py route docstring, test_watchlist.py fake ID)
+Ran pytest tests/test_watchlist.py -v (passes)
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->
