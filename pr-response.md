@@ -1,7 +1,10 @@
 # PR Response Doc — CineLog Watchlist Feature
 
 ## AI Usage
-<!-- Fill in at the end — how you used AI tools during this project -->
+Comment 4 and 5 responses, "Give me an honest review" and "What counterargument would a careful code reviewer raise against this position? What tradeoff am I not acknowledging" respectively.
+
+AI responded by pointing out multiple holes in my responses: "The tradeoff is acknowledged but not examined", "You never actually answer what's being asked: 'what user behavior are you optimizing for?'"
+I then thought through these and wrote down much stronger responses that addressed those holes.
 
 ## Comment 1 — Rename
 **What I did:** Renamed all instances of `save_to_watchlist` to `add_to_watchlist`
@@ -35,4 +38,46 @@ git log --oneline --graph — confirmed linear history, no stray merge commits i
 Manually audited three files that referenced film_id as an int for leftover stale assumptions post-rebase (watchlist_service.py docstring, watchlist.py route docstring, test_watchlist.py fake ID)
 Ran pytest tests/test_watchlist.py -v (passes)
 ## PR Description
-<!-- Written at the end — feature overview, design decisions, manual testing steps -->
+## Summary
+Adds a watchlist feature to CineLog, allowing users to save films they
+want to watch (as distinct from the existing collection feature, which
+tracks films already watched). Includes:
+- `WatchlistEntry` model with a UniqueConstraint on (user_id, film_id)
+- `add_to_watchlist()` and `get_watchlist()` service functions
+- POST /watchlist/<user_id>/add and GET /watchlist/<user_id> endpoints
+- Deduplication logic preventing the same film being added twice
+- Test coverage for the nonexistent-film case
+
+## Design decisions
+**Default visibility (`public=True`):** Watchlist entries default to
+public. CineLog is a community film tracking app, so this optimizes for
+low-friction content discovery — users can see what others want to watch
+without either party taking an action. Entries can be overridden to
+private per-item via the existing `public` field. Tradeoff: a watchlist
+exposes current interest/intent rather than a completed action (unlike
+the collection feature), which is a real privacy cost for users who
+haven't consciously opted into sharing yet.
+
+**Sort order (date added, not alphabetical):** `get_watchlist()` returns
+entries sorted by date added (most recent first), rather than
+alphabetically by title. Most users check a watchlist to see what they
+recently added, not to browse it like a directory. Alphabetical does
+solve a real problem — finding a specific title in a long list — but
+that's better served as an optional secondary sort/filter added later if
+it turns out to be a common need, rather than the default view.
+
+## How to test manually
+1. Start the app: `flask run`
+2. Create a user and a film (via existing endpoints, or `flask shell`)
+3. Add a film to the watchlist:
+POST /watchlist/<user_id>/add
+Body: { "film_id": "<uuid>" }
+   Expect: 201, entry returned as JSON
+4. Repeat the same request with the same user_id/film_id:
+   Expect: 409, `AlreadyInWatchlistError` message
+5. Try adding a film_id that doesn't exist:
+   Expect: 404, `FilmNotFoundError` message
+6. View the watchlist:
+GET /watchlist/<user_id>
+   Expect: list of films, sorted by most recently added first
+7. Run the automated test: `pytest tests/test_watchlist.py -v`
