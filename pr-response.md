@@ -16,14 +16,14 @@
 **How I verified:** Ran `pytest tests/test_watchlist.py -v` — test passes, correctly raising `FilmNotFoundError` for a nonexistent `film_id`.
 
 ## Comment 4 — Default visibility
-**My position:**
-**Reasoning:**
-**Tradeoff acknowledged:**
+**My position:** Visibility should default to public.
+**Reasoning:** The brief specifies CineLog is a "community film tracking app", indicating that a major aspect of the app is the social aspect. Defaulting to public optimizes for seamless content discovery and sharing; users can immediately see their friends' watchlists without either user needing to do anything. Another consideration is that WatchlistEntry.public is a per-entry field meaning a user can override this default per item.
+**Tradeoff acknowledged:** There is a real tradeoff compared to the collection feature: a watchlist exposes current interests and intent rather than a completed action, which can be a meaningful exposure for users who would prefer to keep that private.
 
 ## Comment 5 — Sort order
-**My position:**
-**Reasoning:**
-**Engagement with reviewer's point:**
+**My position:** Sort by date added
+**Reasoning:** Users are more likely to want to know about recently added content than just see it in an essentially random order.
+**Engagement with reviewer's point:** I agree with your point, recency is what most users are optimizing for when checking a watchlist. However we should also think about cases where someone may just want to look for a specific title in a watchlist. In this situation alphabetical makes it much easier than date-added. I don't think this argues against date-added as the default, though — it only argues for eventually offering alphabetical as an optional secondary sort or filter, rather than making it the default users see first. I'd keep date-added as default and treat lookup-by-title as a separate, later feature if it turns out to be a common need.
 
 ## Comment 6 — Rebase
 **What conflicted:**
