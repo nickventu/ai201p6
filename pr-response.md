@@ -12,8 +12,8 @@
 **How I verified:** Confirmed via `flask shell` that `Film.id` is a plain auto-incrementing integer (no UUID), ran `git grep` to confirm no other call sites reference the old duplicate-prone behavior, and manually tested `add_film()` — first call succeeds (201), second call with the same `user_id`/`film_id` returns 409 with the expected error message.
 
 ## Comment 3 — Missing test
-**What I did:**
-**How I verified:**
+**What I did:** Created `tests/test_watchlist.py` and added `test_add_to_watchlist_nonexistent_film_raises`, adapted from `test_collection.py`'s `test_add_to_collection_nonexistent_film_raises` pattern (same `app`/`sample_user`/`sample_film` fixture structure). Also changed the fake film ID from a UUID string to an integer (`999999`), since `Film.id` is an auto-incrementing `Integer`, not a UUID (confirmed earlier).
+**How I verified:** Ran `pytest tests/test_watchlist.py -v` — test passes, correctly raising `FilmNotFoundError` for a nonexistent `film_id`.
 
 ## Comment 4 — Default visibility
 **My position:**
